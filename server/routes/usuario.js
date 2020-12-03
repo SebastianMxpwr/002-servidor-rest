@@ -1,14 +1,33 @@
 const express = require('express');
 const Usuario = require('../models/usuario');
 const app = express();
+const _ = require('underscore')
 
 
 
 app.get('/usuario', function(req, res){
-    res.json({ 
-        ok:200,
-        mensaje: 'Otra madre' 
-    });
+    let desde = req.query.desde || 0
+    let hasta = req.query.hasta || 5
+
+    Usuario.find({ estado: true })
+    .skip(Number(desde))
+    .limit(Number(hasta))
+    .exec((err, usuarios)=>{
+        if(err){
+            return res.status(400).json({
+                ok:false,
+                msg: 'Oscurrio un erro al consulatar',
+                err
+            })
+        }
+
+        res.json({
+            ok: true,
+            msg: 'Aqui esta la lista de usuarios...buto',
+            conteo: usuarios.length,
+            usuarios 
+        })
+    })
 })
 
 app.post('/usuario', function(req, res){
@@ -36,28 +55,67 @@ app.post('/usuario', function(req, res){
     });
 });
 
-app.put('/usuario/:id/:nombre', function(req, res){
-    let id = req.params.id;
-    let nombre = req.params.nombre;
+//actualizar usuario
+app.put('/usuario/:id', function(req, res){
+    let id = req.params.id
+    let body = _.pick(req.body, ['nombre','email'])
 
-    res.json({
-        ok: 200,
-        mensaje: 'Usario actualizado con exito',
-        id: id,
-        nombre:nombre
+    Usuario.findByIdAndUpdate(id,body,
+         {new: true, runValidators: true, context: 'query'},
+         (err, usrDB)=>{
+            if(err){
+                return res.status(400).json({
+                    ok:false,
+                    msg: 'Oscurrio un erro al consulatar',
+                    err
+                })
+            }
+
+            res.json({
+                ok: true,
+                msg: 'usario actualizado con exito',
+                usuario: usrDB
+            })
     })
+    
+    
 })
 
 app.delete('/usuario/:id', function(req, res){
-    let id = req.params.id;
+//    let id = req.params.id
 
-    res.json({
-        ok: 200,
-        mensaje: 'usario se borro',
-        id:id
+//    Usuario.deleteOne({ _id: id }, (err, usuarioBorrado)=> {
+//      if(err){
+//          return res.status(400).json({
+//              ok: false,
+//              msg: 'Algo hiciste mal...Pinche pendejo',
+//              err
+//          })
+//      }
+
+//      res.json({
+//          ok: true,
+//          msg: 'Usuario eliminao con exito',
+//          usuarioBorrado
+//      })
+//    }) 
+
+let id = req.params.id
+
+Usuario.findByIdAndUpdate(id,{estado: false},
+    { new: true , runValidators: true, context: 'query'}, (err ,usrDB) =>{
+        if(err){
+            return res.status(400).json({
+            ok: false,
+            msg: 'Algo hiciste mal...Pinche pendejo',
+            err
+            })
+        }
+        res.json({
+            ok: true,
+            msg: 'Usuario eliminao con exito',
+            usrDB
+            })
     })
-
 })
-
-
 module.exports = app;

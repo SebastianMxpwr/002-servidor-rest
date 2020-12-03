@@ -13,6 +13,7 @@ app.get('/', function(req, res){
 })
 
 app.use(require('./routes/usuario'));
+app.use(require('./routes/categoria'));
 
 mongoose.connect('mongodb://localhost:27017/cafeteria',{
     useNewUrlParser: true,

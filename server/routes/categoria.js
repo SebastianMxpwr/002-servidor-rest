@@ -17,7 +17,8 @@ app.get('/categoria', (req, res)=>{
         if(err){
             return res.status(400).json({
                 ok:false,
-                msg: 'Ocurrio un error al.. ya la cagaste pues'
+                msg: 'Ocurrio un error al.. ya la cagaste pues',
+                err
             })
         }
 
